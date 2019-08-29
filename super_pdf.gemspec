@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = ""
   spec.description   = ""
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.homepage      = ""
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
@@ -33,4 +33,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.14"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "minitest", "~> 5.0"
+  spec.add_development_dependency "mocha", "~> 1.9"
+  spec.add_dependency "prawn", "~> 2.2", '>= 2.2.2'
+  spec.add_dependency "prawn-table", "0.2.2"
+  spec.add_dependency "activesupport", "5.2"
 end
