@@ -36,5 +36,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "mocha", "~> 1.9"
   spec.add_dependency "prawn", "~> 2.2", '>= 2.2.2'
   spec.add_dependency "prawn-table", "0.2.2"
-  spec.add_dependency "activesupport", "5.2"
+  spec.add_dependency "activesupport", ">= 4"
 end
