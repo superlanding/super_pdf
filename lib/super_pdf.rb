@@ -7,5 +7,14 @@ require "super_pdf/renderer"
 require "super_pdf/enhance"
 
 module SuperPDF
-  # Your code goes here...
+
+  class << self
+    def extension_add(base)
+      Prawn::Document.extensions << base
+    end
+
+    def extensions
+      Prawn::Document.extensions
+    end
+  end
 end
