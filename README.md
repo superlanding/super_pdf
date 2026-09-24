@@ -39,3 +39,7 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/vegeta
 
 The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
 
+
+## Rails / ActiveSupport compatibility
+
+`activesupport >= 4` (no upper bound). Verified against ActiveSupport 7.2 and 8.0.5.1 on Ruby 3.3/3.4.

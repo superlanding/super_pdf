@@ -96,7 +96,7 @@ module SuperPDF
           bounding_box([left, top], width: width, height: height) do
             yield if block_given?
             fill_background_color(background_color) if background_color
-            draw_border(convert_border_options(border)) if border
+            draw_border(**convert_border_options(border)) if border
           end
         end
       end
@@ -124,7 +124,7 @@ module SuperPDF
         height ||= bounds.height - pre_height
 
         bounding_box([bounds.left, bounds.top - pre_height], width: width, height: height) do
-          draw_border(convert_border_options(border)) if border
+          draw_border(**convert_border_options(border)) if border
           fill_background_color(background_color) if background_color
 
           left  = bounds.left + padding.left
@@ -170,7 +170,7 @@ module SuperPDF
           bounds.left + left, bounds.top - top
         ], width: width, height: height) do
           fill_background_color(background_color) if background_color
-          draw_border(convert_border_options(border)) if border
+          draw_border(**convert_border_options(border)) if border
           yield if block_given?
         end
         move_cursor_to cursor_cache
