@@ -53,8 +53,10 @@ module SuperPDF
       #     ...
       #   end
       def div(options = {}, &block)
-        margin_div(options[:margin], options.slice(:width, :height, :border, :background_color)) do
-          padding_div(options[:padding], options.slice(:width, :height), &block)
+        # `margin_div` / `padding_div` take keyword arguments. Ruby 3 no longer converts a
+        # trailing Hash into keywords, so splat explicitly (works on Ruby 2.x - 3.x).
+        margin_div(options[:margin], **options.slice(:width, :height, :border, :background_color)) do
+          padding_div(options[:padding], **options.slice(:width, :height), &block)
         end
       end
 

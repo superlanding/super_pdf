@@ -31,6 +31,7 @@ module SuperPDF
 
       def column(options, &block)
         @left_pos ||= pdf.bounds.left
+        options = options.dup # do not mutate the caller's hash
         width = options.delete(:width)
         width = pdf.percent2pt_of_width(width) if pdf.percentage?(width)
         pdf.bounding_box([@left_pos, pdf.bounds.top], width: width, height: pdf.bounds.height) do

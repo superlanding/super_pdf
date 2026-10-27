@@ -95,6 +95,8 @@ margin, so always start with `pdf.page`.
 | `text(string, family: "Name", **prawn_options)` | `Prawn::Document#text` with an optional font `family:` for that call. |
 | `margin_div(margin, width:, height:, border:, background_color:) { }` | Box with an outer margin. Width / height accept points or `"50%"` strings. |
 | `padding_div(padding, width:, height:, border:, background_color:) { }` | Box with inner padding. |
+| `div(margin:, padding:, width:, height:, border:, background_color:) { }` | `margin_div` and `padding_div` in one call (options as keywords or a Hash). |
+| `row { \|row\| row.column(width: "50%", **div_options) { } }` | Bootstrap-like grid: columns are laid out left to right inside the row. |
 | `abs_div(left:, right:, top:, bottom:, border:, background_color:) { }` | Absolutely positioned block inside the current bounds (numbers or `"10%"`); the cursor is restored afterwards. |
 | `scale(factor, origin: [x, y], position: :center) { }` | Scales the content of the block. |
 | `fill_background_color("#f0ffc1")` | Fills the current bounds (`#rgb` or `#rrggbb`). |
@@ -118,8 +120,8 @@ SuperPDF.extensions                        # => Prawn::Document.extensions
 
 These come from the current implementation and are documented here so that you do not trip over them:
 
-- `div`, `row` and `row.column` (the CSS-grid-like helpers) raise `ArgumentError (wrong number of arguments (given 2, expected 1))`
-  on Ruby 3.x, because they pass an options hash to keyword-argument methods. Use `margin_div` / `padding_div` / `abs_div` instead.
+- `div(width: "50%")` applies the percentage twice (to the margin box, then to the padding box inside it), so the content is 25 % wide.
+  Behaviour kept for compatibility; use `margin_div` / `padding_div` for exact percentages, or a numeric width.
 - Font family names are looked up as Strings by current Prawn versions, so register and select fonts with **String** names
   (`"NotoSansTC"`, not `:NotoSansTC`).
 - `test/support/font/MSJH.ttf` in this repository is an empty placeholder; tests do not render with a real font.
