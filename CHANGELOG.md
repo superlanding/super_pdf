@@ -16,6 +16,17 @@
 
 - `README.md`、`CHANGELOG.md` 改以繁體中文（zh-TW）撰寫。
 
+## [0.1.6] - 2026-10-27
+
+### Fixed
+
+- `div`、`row` 與 `row.column` 在 Ruby 3.x 會 raise `ArgumentError (wrong number of arguments (given 2, expected 1))`，原因是 `div` 把 Hash 傳給使用 keyword argument 的 `margin_div` / `padding_div`。現在改成以 `**` 展開 options，因此可在 Ruby 3.0–3.4 運作，並且所有既有的呼叫方式（`div(margin: 10)`、`div({ margin: 10 })`、`row.column(width: "50%")`）都能繼續使用。公開 API 沒有變動。
+- `row.column(options)` 不再刪除呼叫端傳入的 Hash 裡的 `:width`（改為對複本操作）。
+
+### Added
+
+- `div`（keyword / hash options、邊框、背景色、百分比寬度、不會改動傳入的 options）以及 `row` / `column` 的測試。
+
 ## [0.1.5] - 2026-10-27
 
 ### Added
@@ -57,7 +68,8 @@
 
 - 首次發佈：在 Prawn 之上提供 `SuperPDF::Enhance`、`SuperPDF::Page`（頁面尺寸）、`SuperPDF::Font`（預設字型 family）與 `SuperPDF::Renderer`（`page`、`margin_div`、`padding_div`、`abs_div`、`row`/`column`、`scale`、邊框與背景色）。
 
-[Unreleased]: https://github.com/superlanding/super_pdf/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/superlanding/super_pdf/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/superlanding/super_pdf/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/superlanding/super_pdf/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/superlanding/super_pdf/tree/v0.1.4
 [0.1.2]: https://github.com/superlanding/super_pdf/tree/0.1.2

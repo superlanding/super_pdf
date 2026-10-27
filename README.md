@@ -93,6 +93,8 @@ File.binwrite("label.pdf", ShippingLabelPDF.new.render)
 | `text(string, family: "Name", **prawn_options)` | 即 `Prawn::Document#text`，可用 `family:` 指定這次呼叫使用的字型。 |
 | `margin_div(margin, width:, height:, border:, background_color:) { }` | 帶外距（margin）的區塊。寬 / 高可傳 point 數值或 `"50%"` 字串。 |
 | `padding_div(padding, width:, height:, border:, background_color:) { }` | 帶內距（padding）的區塊。 |
+| `div(margin:, padding:, width:, height:, border:, background_color:) { }` | 一次呼叫就同時具備 `margin_div` 與 `padding_div`（options 可用 keyword 或 Hash 傳入）。 |
+| `row { \|row\| row.column(width: "50%", **div_options) { } }` | 類似 Bootstrap 的 grid：欄（column）在 row 內由左到右排列。 |
 | `abs_div(left:, right:, top:, bottom:, border:, background_color:) { }` | 在目前的 bounds 內做絕對定位的區塊（數值或 `"10%"`）；結束後會還原游標位置。 |
 | `scale(factor, origin: [x, y], position: :center) { }` | 縮放 block 內的內容。 |
 | `fill_background_color("#f0ffc1")` | 以背景色填滿目前的 bounds（`#rgb` 或 `#rrggbb`）。 |
@@ -116,8 +118,8 @@ SuperPDF.extensions                        # => Prawn::Document.extensions
 
 以下是目前實作造成的限制，先寫在這裡，避免你踩到：
 
-- `div`、`row` 與 `row.column`（類似 CSS grid 的輔助方法）在 Ruby 3.x 會 raise `ArgumentError (wrong number of arguments (given 2, expected 1))`，
-  因為它們把 options hash 傳給了使用 keyword argument 的方法。請改用 `margin_div` / `padding_div` / `abs_div`。
+- `div(width: "50%")` 會把百分比套用兩次（先套在 margin 區塊，再套在裡面的 padding 區塊），所以內容實際只有 25 % 寬。
+  為了相容性保留這個行為；要精確的百分比請改用 `margin_div` / `padding_div`，或使用數值寬度。
 - 目前版本的 Prawn 是以 String 查詢字型 family 名稱，所以註冊與選用字型時請用 **String** 名稱
   （`"NotoSansTC"`，不要用 `:NotoSansTC`）。
 - 此 repo 內的 `test/support/font/MSJH.ttf` 是空的佔位檔；測試不會用真正的字型來 render。

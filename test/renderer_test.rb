@@ -90,8 +90,108 @@ class RendererTest < Minitest::Test
     end
   end
 
+  def test_div_without_options
+    pdf.page do
+      pdf.div do
+        assert_equal(pdf.page_width, pdf.bounds.width)
+      end
+    end
+  end
+
+  def test_div_with_keyword_style_options
+    pdf.page do
+      pdf.div(margin: [20, 10], padding: 5, width: 100, height: 100) do
+        assert_equal(100 - 10, pdf.bounds.width)
+        assert_equal(100 - 10, pdf.bounds.height)
+      end
+      assert_equal(100 + 20 + 20, pdf.page_height - pdf.cursor)
+    end
+  end
+
+  def test_div_with_hash_style_options
+    pdf.page do
+      pdf.div({ margin: [20, 10], padding: 5, width: 100, height: 100 }) do
+        assert_equal(100 - 10, pdf.bounds.width)
+        assert_equal(100 - 10, pdf.bounds.height)
+      end
+    end
+  end
+
+  def test_div_with_border
+    pdf.page do
+      pdf.expects(:stroke_bounds).at_least_once
+      pdf.div(width: 100, height: 100, border: '1pt solid #222') do
+        assert_equal(100, pdf.bounds.width)
+      end
+    end
+  end
+
+  def test_div_with_percentage_width
+    pdf.page do
+      pdf.div(width: '50%', height: 100) do
+        assert_operator(pdf.bounds.width, :<=, pdf.page_width / 2)
+      end
+    end
+  end
+
+  def test_div_with_background_color
+    pdf.page do
+      pdf.div(width: 100, height: 100, background_color: '#222') {}
+    end
+    assert_equal('222222', pdf.graphic_state.fill_color)
+  end
+
+  def test_div_does_not_mutate_options
+    options = { margin: 10, padding: 5, width: 100, height: 100 }
+    expected = options.dup
+    pdf.page { pdf.div(options) {} }
+    assert_equal(expected, options)
+  end
+
   def test_row
-    # TODO: ...
+    pdf.page do
+      pdf.row do |row|
+        assert_kind_of(SuperPDF::Renderer::Row, row)
+      end
+      assert_equal(0, pdf.send(:rows).rows.length)
+    end
+  end
+
+  def test_row_with_columns
+    widths = []
+    lefts = []
+    pdf.page do
+      pdf.row do |row|
+        2.times do
+          row.column(width: '50%') do
+            widths << pdf.bounds.width
+            lefts << pdf.bounds.absolute_left
+          end
+        end
+      end
+    end
+    assert_equal(2, widths.length)
+    widths.each { |w| assert_in_delta(pdf.page_width / 2, w, 0.01) }
+    assert_in_delta(0, lefts[0], 0.01)
+    assert_in_delta(pdf.page_width / 2, lefts[1], 0.01)
+  end
+
+  def test_row_column_with_div_options
+    inner = nil
+    pdf.page do
+      pdf.row do |row|
+        row.column(width: 200, padding: 10, border: true) { inner = pdf.bounds.width }
+      end
+    end
+    assert_equal(200 - 20, inner)
+  end
+
+  def test_row_column_does_not_mutate_options
+    options = { width: 100 }
+    pdf.page do
+      pdf.row { |row| row.column(options) {} }
+    end
+    assert_equal({ width: 100 }, options)
   end
 
   def test_scale
