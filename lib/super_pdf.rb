@@ -1,5 +1,8 @@
 require 'prawn'
+require 'ostruct'
 require 'active_support'
+require 'active_support/concern'
+require 'active_support/core_ext/module/delegation'
 require "super_pdf/version"
 require "super_pdf/page"
 require "super_pdf/font"
