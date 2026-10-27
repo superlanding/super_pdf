@@ -8,3 +8,7 @@
 /spec/reports/
 /tmp/
 *.gem
+
+# gem 測試用（gemfiles/*.gemfile 由 CI 解析，不追蹤 lockfile，各 Ruby 版本的 Bundler 不同）
+/gemfiles/*.gemfile.lock
+/gemfiles/.bundle/
