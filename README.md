@@ -3,62 +3,60 @@
 [![Gem Version](https://badge.fury.io/rb/super_pdf.svg)](https://rubygems.org/gems/super_pdf)
 [![Tests](https://github.com/superlanding/super_pdf/actions/workflows/test.yml/badge.svg)](https://github.com/superlanding/super_pdf/actions/workflows/test.yml)
 
-SuperPDF is a small layout layer on top of [Prawn](https://prawnpdf.org/). Include
-`SuperPDF::Enhance` in any plain Ruby class and you get a `pdf` object (a `Prawn::Document`)
-with CSS-like helpers: boxes with margin / padding / border / background colour,
-absolutely positioned blocks, a default font and named page sizes.
+SuperPDF 是建構在 [Prawn](https://prawnpdf.org/) 之上的一層簡易排版工具。在任何一般的 Ruby class 裡 include
+`SuperPDF::Enhance`，就會得到一個 `pdf` 物件（也就是 `Prawn::Document`），並附帶類似 CSS 的輔助方法：
+可設定 margin / padding / border / 背景色的區塊、絕對定位區塊、預設字型，以及具名的頁面尺寸。
 
-It only depends on `activesupport` (not on a full Rails app), so it can be used from Rails,
-Sidekiq jobs, scripts, and so on.
+它只依賴 `activesupport`（不需要完整的 Rails 應用程式），所以 Rails、Sidekiq job、一般腳本等環境都能使用。
 
-## Requirements
+## 環境需求
 
-| | Supported (tested in CI) |
+| | 支援版本（CI 都有測試） |
 |---|---|
-| Ruby | 3.0, 3.1, 3.2, 3.3, 3.4 (gemspec: `>= 2.7`) |
-| ActiveSupport / Rails | 7.0, 7.1, 7.2, 8.0, 8.1 (gemspec: `activesupport >= 4`) |
-| Runtime dependencies | `prawn ~> 2.2`, `prawn-table 0.2.2`, `prawn-icon 2.4.0`, `matrix`, `ostruct` |
+| Ruby | 3.0、3.1、3.2、3.3、3.4（gemspec：`>= 2.7`） |
+| ActiveSupport / Rails | 7.0、7.1、7.2、8.0、8.1（gemspec：`activesupport >= 4`） |
+| Runtime 相依套件 | `prawn ~> 2.2`、`prawn-table 0.2.2`、`prawn-icon 2.4.0`、`matrix`、`ostruct` |
 
-CI runs every Ruby × ActiveSupport combination that the Ruby version allows
-(Rails 7.2 needs Ruby >= 3.1, Rails 8.0 / 8.1 need Ruby >= 3.2).
-See [`.github/workflows/test.yml`](.github/workflows/test.yml).
+CI 會跑所有該 Ruby 版本允許的 Ruby × ActiveSupport 組合
+（Rails 7.2 需要 Ruby >= 3.1，Rails 8.0 / 8.1 需要 Ruby >= 3.2）。
+詳見 [`.github/workflows/test.yml`](.github/workflows/test.yml)。
 
-## Installation
+## 安裝
 
-Add this line to your application's Gemfile:
+在應用程式的 Gemfile 加入這一行：
 
 ```ruby
 gem "super_pdf"
 ```
 
-and run `bundle install`, or install it yourself with `gem install super_pdf`.
+然後執行 `bundle install`，或自行執行 `gem install super_pdf` 安裝。
 
-## Usage
+## 使用方式
 
-### 1. Register fonts and page sizes (once, e.g. in an initializer)
+### 1. 註冊字型與頁面尺寸（只需做一次，例如放在 initializer）
 
 ```ruby
 require "super_pdf"
 
-# Page sizes: name => [width, height] in PDF points (1 pt = 1/72 in), or any value
-# that Prawn accepts for :page_size, such as "A4". "A4" is the default.
+# 頁面尺寸：名稱 => [寬, 高]，單位為 PDF point（1 pt = 1/72 英吋），
+# 也可以是 Prawn 的 :page_size 接受的任何值，例如 "A4"。預設為 "A4"。
 SuperPDF::Page::SIZE["label_100x150"] = [283.46, 425.2]
 
-# Fonts: use String keys. The value is a Prawn font family hash.
+# 字型：key 請用 String，value 是 Prawn 的 font family hash。
 SuperPDF::Font::FAMILIES["NotoSansTC"] = {
   normal: Rails.root.join("app/assets/fonts/NotoSansTC-Regular.ttf").to_s,
   bold:   Rails.root.join("app/assets/fonts/NotoSansTC-Bold.ttf").to_s
 }
 ```
 
-### 2. Include `SuperPDF::Enhance` in your class
+### 2. 在你的 class 裡 include `SuperPDF::Enhance`
 
 ```ruby
 class ShippingLabelPDF
   include SuperPDF::Enhance
 
-  page_size "label_100x150"      # a key of SuperPDF::Page::SIZE (default: "A4")
-  default_font "NotoSansTC"      # a key of SuperPDF::Font::FAMILIES
+  page_size "label_100x150"      # SuperPDF::Page::SIZE 的 key（預設："A4"）
+  default_font "NotoSansTC"      # SuperPDF::Font::FAMILIES 的 key
 
   def render
     pdf.page(margin: 10) do
@@ -77,90 +75,90 @@ class ShippingLabelPDF
       pdf.scale(0.8, position: :center) { pdf.text "Scaled" }
     end
 
-    pdf.render   # => PDF binary string; use pdf.render_file("label.pdf") to write a file
+    pdf.render   # => PDF 二進位字串；要寫成檔案請用 pdf.render_file("label.pdf")
   end
 end
 
 File.binwrite("label.pdf", ShippingLabelPDF.new.render)
 ```
 
-`pdf` is memoised per instance and is created with `skip_page_creation: true` and zero
-margin, so always start with `pdf.page`.
+`pdf` 在每個 instance 內只會建立一次（memoize），建立時帶有 `skip_page_creation: true` 且 margin 為 0，
+所以一律要從 `pdf.page` 開始。
 
-### Helpers added to `pdf`
+### `pdf` 提供的輔助方法
 
-| Method | What it does |
+| 方法 | 說明 |
 |---|---|
-| `page(options = {}) { }` | Starts a new page (`size:`, `layout:`, `margin:`, `font:` …) and runs the block with the default font. `size:` is looked up in `SuperPDF::Page::SIZE`. |
-| `text(string, family: "Name", **prawn_options)` | `Prawn::Document#text` with an optional font `family:` for that call. |
-| `margin_div(margin, width:, height:, border:, background_color:) { }` | Box with an outer margin. Width / height accept points or `"50%"` strings. |
-| `padding_div(padding, width:, height:, border:, background_color:) { }` | Box with inner padding. |
-| `abs_div(left:, right:, top:, bottom:, border:, background_color:) { }` | Absolutely positioned block inside the current bounds (numbers or `"10%"`); the cursor is restored afterwards. |
-| `scale(factor, origin: [x, y], position: :center) { }` | Scales the content of the block. |
-| `fill_background_color("#f0ffc1")` | Fills the current bounds (`#rgb` or `#rrggbb`). |
-| `page_width`, `page_height` | Size of the margin box. |
+| `page(options = {}) { }` | 開新的一頁（可帶 `size:`、`layout:`、`margin:`、`font:` 等），並以預設字型執行 block。`size:` 會到 `SuperPDF::Page::SIZE` 查詢。 |
+| `text(string, family: "Name", **prawn_options)` | 即 `Prawn::Document#text`，可用 `family:` 指定這次呼叫使用的字型。 |
+| `margin_div(margin, width:, height:, border:, background_color:) { }` | 帶外距（margin）的區塊。寬 / 高可傳 point 數值或 `"50%"` 字串。 |
+| `padding_div(padding, width:, height:, border:, background_color:) { }` | 帶內距（padding）的區塊。 |
+| `abs_div(left:, right:, top:, bottom:, border:, background_color:) { }` | 在目前的 bounds 內做絕對定位的區塊（數值或 `"10%"`）；結束後會還原游標位置。 |
+| `scale(factor, origin: [x, y], position: :center) { }` | 縮放 block 內的內容。 |
+| `fill_background_color("#f0ffc1")` | 以背景色填滿目前的 bounds（`#rgb` 或 `#rrggbb`）。 |
+| `page_width`、`page_height` | 扣除 margin 之後的可用區域大小。 |
 
-Margin / padding values follow CSS shorthand: `10`, `[vertical, horizontal]`, `[top, horizontal, bottom]`
-or `[top, right, bottom, left]`.
+margin / padding 的值沿用 CSS 簡寫規則：`10`、`[vertical, horizontal]`、`[top, horizontal, bottom]`
+或 `[top, right, bottom, left]`。
 
-Border values are `true` (1 pt solid black), a string such as `"1pt dashed #222"`
-(`<width><mm|cm|dm|m|in|yd|ft|pt> <solid|dashed|dotted> #<rgb|rrggbb>`), or a hash
-`{ color: "222222", style: "solid", width: 1 }`.
+border 的值可以是 `true`（1 pt 實線、黑色）、像 `"1pt dashed #222"` 這樣的字串
+（`<width><mm|cm|dm|m|in|yd|ft|pt> <solid|dashed|dotted> #<rgb|rrggbb>`），或是 hash
+`{ color: "222222", style: "solid", width: 1 }`。
 
-### Extending Prawn
+### 擴充 Prawn
 
 ```ruby
-SuperPDF.extension_add(MyPrawnExtension)  # same as Prawn::Document.extensions << MyPrawnExtension
+SuperPDF.extension_add(MyPrawnExtension)  # 等同於 Prawn::Document.extensions << MyPrawnExtension
 SuperPDF.extensions                        # => Prawn::Document.extensions
 ```
 
-### Known limitations
+### 已知限制
 
-These come from the current implementation and are documented here so that you do not trip over them:
+以下是目前實作造成的限制，先寫在這裡，避免你踩到：
 
-- `div`, `row` and `row.column` (the CSS-grid-like helpers) raise `ArgumentError (wrong number of arguments (given 2, expected 1))`
-  on Ruby 3.x, because they pass an options hash to keyword-argument methods. Use `margin_div` / `padding_div` / `abs_div` instead.
-- Font family names are looked up as Strings by current Prawn versions, so register and select fonts with **String** names
-  (`"NotoSansTC"`, not `:NotoSansTC`).
-- `test/support/font/MSJH.ttf` in this repository is an empty placeholder; tests do not render with a real font.
+- `div`、`row` 與 `row.column`（類似 CSS grid 的輔助方法）在 Ruby 3.x 會 raise `ArgumentError (wrong number of arguments (given 2, expected 1))`，
+  因為它們把 options hash 傳給了使用 keyword argument 的方法。請改用 `margin_div` / `padding_div` / `abs_div`。
+- 目前版本的 Prawn 是以 String 查詢字型 family 名稱，所以註冊與選用字型時請用 **String** 名稱
+  （`"NotoSansTC"`，不要用 `:NotoSansTC`）。
+- 此 repo 內的 `test/support/font/MSJH.ttf` 是空的佔位檔；測試不會用真正的字型來 render。
 
-## Development
+## 開發
 
 ```bash
 git clone https://github.com/superlanding/super_pdf.git
 cd super_pdf
-bin/setup                       # bundle install with the default Gemfile
+bin/setup                       # 用預設 Gemfile 執行 bundle install
 
-# Run the tests against one Ruby / Rails combination (the same way CI does)
+# 針對單一 Ruby / Rails 組合跑測試（和 CI 的做法相同）
 BUNDLE_GEMFILE=$PWD/gemfiles/rails_8.1.gemfile bundle install
 BUNDLE_GEMFILE=$PWD/gemfiles/rails_8.1.gemfile bundle exec rake test
 
-bin/console                     # interactive prompt
+bin/console                     # 互動式 console
 ```
 
-Available gemfiles: `gemfiles/rails_7.0.gemfile` … `gemfiles/rails_8.1.gemfile`. Tests use Minitest and Mocha
-(`test/**/*_test.rb`). `rake` (default task) runs the tests.
+可用的 gemfile：`gemfiles/rails_7.0.gemfile` … `gemfiles/rails_8.1.gemfile`。測試使用 Minitest 與 Mocha
+（`test/**/*_test.rb`）。`rake`（預設 task）會執行測試。
 
-## Releasing
+## 發版
 
-Releases are automated with RubyGems [Trusted Publishing](https://guides.rubygems.org/trusted-publishing/)
-(no API key is stored in the repository):
+發版透過 RubyGems [Trusted Publishing](https://guides.rubygems.org/trusted-publishing/) 自動完成
+（repo 內不存放任何 API key）：
 
-1. In your pull request, bump `SuperPDF::VERSION` in `lib/super_pdf/version.rb` following
-   [Semantic Versioning](https://semver.org/) (bug fix → patch, compatible feature → minor, breaking change → major).
-2. Add the entry to `CHANGELOG.md` under the new version section.
-3. Get the PR reviewed and **merge it into `master`** (only humans merge).
-4. [`.github/workflows/publish.yml`](.github/workflows/publish.yml) runs on `master`: it compares the gemspec version with
-   rubygems.org, runs the tests and, if the version is new, publishes the gem and pushes the `vX.Y.Z` tag.
-   A merge that does not change the version publishes nothing.
+1. 在你的 pull request 裡，依 [Semantic Versioning](https://semver.org/lang/zh-TW/) 修改 `lib/super_pdf/version.rb` 的
+   `SuperPDF::VERSION`（修 bug → patch、相容的新功能 → minor、不相容的變更 → major）。
+2. 在 `CHANGELOG.md` 的新版本區塊新增對應條目。
+3. PR 經過 review 後**合併進 `master`**（只有真人可以合併）。
+4. [`.github/workflows/publish.yml`](.github/workflows/publish.yml) 會在 `master` 上執行：比對 gemspec 版本與
+   rubygems.org 上的版本，執行測試，若是新版本就發佈 gem 並推送 `vX.Y.Z` tag。
+   沒有改版本號的合併不會發佈任何東西。
 
-Pull requests that only change documentation or CI do not need a version bump. See [CLAUDE.md](CLAUDE.md)
-for the contribution rules (every PR must also update `README.md` and `CHANGELOG.md`).
+只改文件或 CI 的 pull request 不需要跳版號。貢獻規則請見 [CLAUDE.md](CLAUDE.md)
+（每個 PR 也都必須更新 `README.md` 與 `CHANGELOG.md`）。
 
-## Contributing
+## 貢獻
 
-Bug reports and pull requests are welcome at https://github.com/superlanding/super_pdf.
+歡迎到 https://github.com/superlanding/super_pdf 回報問題與提交 pull request。
 
-## License
+## 授權
 
-The gem is available as open source under the terms of the [MIT License](LICENSE.txt).
+本 gem 以 [MIT License](LICENSE.txt) 條款開源。
