@@ -34,5 +34,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "matrix"
   spec.add_dependency "ostruct"
   spec.add_dependency "prawn-table", "0.2.2"
-  spec.add_dependency "prawn-icon", "2.4.0"
+  spec.add_dependency "prawn-icon", "4.1.0"
 end
